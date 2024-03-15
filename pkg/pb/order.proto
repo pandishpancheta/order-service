@@ -22,8 +22,7 @@ message Order {
 message NewOrderRequest {
   string user_id = 1;
   string listing_id = 2;
-  string status = 3;
-  string token_uri = 4;
+  string token_uri = 3;
 }
 
 message GetOrdersByUserRequest {
