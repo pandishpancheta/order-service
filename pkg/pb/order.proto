@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package orders;
+
+option go_package = "./pkg/pb";
+
+service OrderService {
+  rpc CreateOrder(NewOrderRequest) returns (OrderResponse);
+  rpc GetOrdersByUser(GetOrdersByUserRequest) returns (OrdersResponse);
+  rpc GetOrderByID(GetOrderByIDRequest) returns (OrderResponse);
+  rpc UpdateStatus(UpdateStatusRequest) returns (EmptyResponse);
+}
+
+message Order {
+  string id = 1;
+  string user_id = 2;
+  string listing_id = 3;
+  string status = 4;
+  string token_uri = 5;
+}
+
+message NewOrderRequest {
+  string user_id = 1;
+  string listing_id = 2;
+  string status = 3;
+  string token_uri = 4;
+}
+
+message GetOrdersByUserRequest {
+  string user_id = 1;
+}
+
+message GetOrderByIDRequest {
+  string id = 1;
+}
+
+message OrderResponse {
+  Order order = 1;
+}
+
+message UpdateStatusRequest {
+  string id = 1;
+  string status = 2;
+}
+
+message OrdersResponse {
+  repeated Order orders = 1;
+}
+
+message EmptyResponse {}
