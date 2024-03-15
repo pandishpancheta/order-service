@@ -17,12 +17,12 @@ type Config struct {
 
 func LoadConfig() *Config {
 	return &Config{
-		TCP_PORT: strings.TrimSpace(os.Getenv("TCP_PORT")),
+		TCP_PORT: strings.TrimSuffix(os.Getenv("TCP_PORT"), "\n"),
 
-		DB_HOST: strings.TrimSpace(os.Getenv("DB_HOST")),
-		DB_PORT: strings.TrimSpace(os.Getenv("DB_PORT")),
-		DB_USER: strings.TrimSpace(os.Getenv("DB_USER")),
-		DB_PASS: strings.TrimSpace(os.Getenv("DB_PASS")),
-		DB_NAME: strings.TrimSpace(os.Getenv("DB_NAME")),
+		DB_HOST: strings.TrimSuffix(os.Getenv("DB_HOST"), "\n"),
+		DB_PORT: strings.TrimSuffix(os.Getenv("DB_PORT"), "\n"),
+		DB_USER: strings.TrimSuffix(os.Getenv("DB_USER"), "\n"),
+		DB_PASS: strings.TrimSuffix(os.Getenv("DB_PASS"), "\n"),
+		DB_NAME: strings.TrimSuffix(os.Getenv("DB_NAME"), "\n"),
 	}
 }
