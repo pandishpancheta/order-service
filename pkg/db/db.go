@@ -40,7 +40,7 @@ func InitTable(db *sql.DB) {
 		user_id UUID NOT NULL,
 		listing_id UUID NOT NULL,
 		status VARCHAR(255) NOT NULL DEFAULT 'pending',
-		token_uri VARCHAR(255) NOT NULL
+		token_uri VARCHAR(255) NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES users(id),
 		FOREIGN KEY (listing_id) REFERENCES listings(id)
 	)`)
