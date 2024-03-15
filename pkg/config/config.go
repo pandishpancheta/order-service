@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strings"
 )
 
 type Config struct {
@@ -16,12 +17,12 @@ type Config struct {
 
 func LoadConfig() *Config {
 	return &Config{
-		TCP_PORT: os.Getenv("TCP_PORT"),
+		TCP_PORT: strings.TrimSpace(os.Getenv("TCP_PORT")),
 
-		DB_HOST: os.Getenv("DB_HOST"),
-		DB_PORT: os.Getenv("DB_PORT"),
-		DB_USER: os.Getenv("DB_USER"),
-		DB_PASS: os.Getenv("DB_PASS"),
-		DB_NAME: os.Getenv("DB_NAME"),
+		DB_HOST: strings.TrimSpace(os.Getenv("DB_HOST")),
+		DB_PORT: strings.TrimSpace(os.Getenv("DB_PORT")),
+		DB_USER: strings.TrimSpace(os.Getenv("DB_USER")),
+		DB_PASS: strings.TrimSpace(os.Getenv("DB_PASS")),
+		DB_NAME: strings.TrimSpace(os.Getenv("DB_NAME")),
 	}
 }
