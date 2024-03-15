@@ -35,6 +35,7 @@ func Init(cfg *config.Config) *sql.DB {
 
 func InitTable(db *sql.DB) {
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS orders (
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		id UUID PRIMARY KEY,
 		user_id UUID NOT NULL,
 		listing_id UUID NOT NULL,

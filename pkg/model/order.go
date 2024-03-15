@@ -11,6 +11,7 @@ const (
 )
 
 type Order struct {
+	CreatedAt string    `json:"created_at"`
 	ID        uuid.UUID `json:"id"`
 	UserID    uuid.UUID `json:"user_id"`
 	ListingID uuid.UUID `json:"listing_id"`
