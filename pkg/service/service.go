@@ -58,9 +58,8 @@ func (o orderService) CreateOrder(ctx context.Context, req *pb.NewOrderRequest) 
 	}
 
 	order.Status = model.Pending
-	order.TokenURI = req.GetTokenUri()
 
-	_, err = o.db.ExecContext(ctx, "INSERT INTO orders (id, user_id, listing_id, status, token_uri) VALUES ($1, $2, $3, $4, $5)", order.ID, order.UserID, order.ListingID, order.Status, order.TokenURI)
+	_, err = o.db.ExecContext(ctx, "INSERT INTO orders (id, user_id, listing_id, status) VALUES ($1, $2, $3, $4)", order.ID, order.UserID, order.ListingID, order.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -71,13 +70,12 @@ func (o orderService) CreateOrder(ctx context.Context, req *pb.NewOrderRequest) 
 			UserId:    order.UserID.String(),
 			ListingId: order.ListingID.String(),
 			Status:    string(order.Status),
-			TokenUri:  order.TokenURI,
 		},
 	}, nil
 }
 
 func (o orderService) GetOrdersByUser(ctx context.Context, req *pb.GetOrdersByUserRequest) (*pb.OrdersResponse, error) {
-	rows, err := o.db.QueryContext(ctx, "SELECT * FROM orders WHERE user_id = $1", req.GetUserId())
+	rows, err := o.db.QueryContext(ctx, "SELECT id, user_id, listing_id, status FROM orders WHERE user_id = $1", req.GetUserId())
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +83,7 @@ func (o orderService) GetOrdersByUser(ctx context.Context, req *pb.GetOrdersByUs
 	var orders []*pb.Order
 	for rows.Next() {
 		var order model.Order
-		err = rows.Scan(&order.ID, &order.UserID, &order.ListingID, &order.Status, &order.TokenURI)
+		err = rows.Scan(&order.ID, &order.UserID, &order.ListingID, &order.Status)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +92,6 @@ func (o orderService) GetOrdersByUser(ctx context.Context, req *pb.GetOrdersByUs
 			UserId:    order.UserID.String(),
 			ListingId: order.ListingID.String(),
 			Status:    string(order.Status),
-			TokenUri:  order.TokenURI,
 		})
 	}
 
@@ -105,7 +102,7 @@ func (o orderService) GetOrdersByUser(ctx context.Context, req *pb.GetOrdersByUs
 
 func (o orderService) GetOrderByID(ctx context.Context, req *pb.GetOrderByIDRequest) (*pb.OrderResponse, error) {
 	var order model.Order
-	err := o.db.QueryRowContext(ctx, "SELECT * FROM orders WHERE id = $1", req.GetId()).Scan(&order.ID, &order.UserID, &order.ListingID, &order.Status, &order.TokenURI)
+	err := o.db.QueryRowContext(ctx, "SELECT id, user_id, listing_id, status FROM orders WHERE id = $1", req.GetId()).Scan(&order.ID, &order.UserID, &order.ListingID, &order.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +113,6 @@ func (o orderService) GetOrderByID(ctx context.Context, req *pb.GetOrderByIDRequ
 			UserId:    order.UserID.String(),
 			ListingId: order.ListingID.String(),
 			Status:    string(order.Status),
-			TokenUri:  order.TokenURI,
 		},
 	}, nil
 }
