@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/gofrs/uuid/v5"
+	"log"
 	"order-service/pkg/config"
 	"order-service/pkg/model"
 	"order-service/pkg/pb"
@@ -59,23 +60,51 @@ func (o orderService) CreateOrder(ctx context.Context, req *pb.NewOrderRequest) 
 
 	order.Status = model.Pending
 
-	_, err = o.db.ExecContext(ctx, "INSERT INTO orders (id, user_id, listing_id, status) VALUES ($1, $2, $3, $4)", order.ID, order.UserID, order.ListingID, order.Status)
-	if err != nil {
+	query := `
+        WITH inserted AS (
+            INSERT INTO orders (id, user_id, listing_id, status)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        )
+        SELECT inserted.id, inserted.listing_id, inserted.status, listings.name, listings.description, listings.uri
+        FROM inserted
+        INNER JOIN listings ON inserted.listing_id = listings.id
+    `
+	row := o.db.QueryRowContext(ctx, query, order.ID, order.UserID, order.ListingID, order.Status)
+
+	var insertedOrder model.Order
+	var name, description, tokenURI string
+	if err := row.Scan(&insertedOrder.ID, &insertedOrder.ListingID, &insertedOrder.Status, &name, &description, &tokenURI); err != nil {
 		return nil, err
 	}
 
+	log.Println("Order created: ", insertedOrder.ID.String())
+	log.Println("Order listing: ", insertedOrder.ListingID.String())
+	log.Println("Order status: ", insertedOrder.Status)
+	log.Println("Order name: ", name)
+	log.Println("Order description: ", description)
+	log.Println("Order tokenURI: ", tokenURI)
+
 	return &pb.OrderResponse{
 		Order: &pb.Order{
-			Id:        order.ID.String(),
-			UserId:    order.UserID.String(),
-			ListingId: order.ListingID.String(),
-			Status:    string(order.Status),
+			Id:          insertedOrder.ID.String(),
+			ListingId:   insertedOrder.ListingID.String(),
+			Name:        name,
+			Description: description,
+			TokenUri:    tokenURI,
+			Status:      string(insertedOrder.Status),
 		},
 	}, nil
 }
 
 func (o orderService) GetOrdersByUser(ctx context.Context, req *pb.GetOrdersByUserRequest) (*pb.OrdersResponse, error) {
-	rows, err := o.db.QueryContext(ctx, "SELECT id, user_id, listing_id, status FROM orders WHERE user_id = $1", req.GetUserId())
+	query := `
+        SELECT o.id, o.user_id, o.listing_id, o.status, l.name, l.description, l.uri
+        FROM orders o
+        JOIN listings l ON o.listing_id = l.id
+        WHERE o.user_id = $1
+    `
+	rows, err := o.db.QueryContext(ctx, query, req.GetUserId())
 	if err != nil {
 		return nil, err
 	}
@@ -83,15 +112,18 @@ func (o orderService) GetOrdersByUser(ctx context.Context, req *pb.GetOrdersByUs
 	var orders []*pb.Order
 	for rows.Next() {
 		var order model.Order
-		err = rows.Scan(&order.ID, &order.UserID, &order.ListingID, &order.Status)
+		var name, description, tokenURI string
+		err = rows.Scan(&order.ID, &order.UserID, &order.ListingID, &order.Status, &name, &description, &tokenURI)
 		if err != nil {
 			return nil, err
 		}
 		orders = append(orders, &pb.Order{
-			Id:        order.ID.String(),
-			UserId:    order.UserID.String(),
-			ListingId: order.ListingID.String(),
-			Status:    string(order.Status),
+			Id:          order.ID.String(),
+			ListingId:   order.ListingID.String(),
+			Name:        name,
+			Description: description,
+			TokenUri:    tokenURI,
+			Status:      string(order.Status),
 		})
 	}
 
@@ -102,17 +134,25 @@ func (o orderService) GetOrdersByUser(ctx context.Context, req *pb.GetOrdersByUs
 
 func (o orderService) GetOrderByID(ctx context.Context, req *pb.GetOrderByIDRequest) (*pb.OrderResponse, error) {
 	var order model.Order
-	err := o.db.QueryRowContext(ctx, "SELECT id, user_id, listing_id, status FROM orders WHERE id = $1", req.GetId()).Scan(&order.ID, &order.UserID, &order.ListingID, &order.Status)
+	var name, description, tokenURI string
+	err := o.db.QueryRowContext(ctx, `
+        SELECT o.id, o.user_id, o.listing_id, o.status, l.name, l.description, l.uri
+        FROM orders o
+        JOIN listings l ON o.listing_id = l.id
+        WHERE o.id = $1
+    `, req.GetId()).Scan(&order.ID, &order.UserID, &order.ListingID, &order.Status, &name, &description, &tokenURI)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.OrderResponse{
 		Order: &pb.Order{
-			Id:        order.ID.String(),
-			UserId:    order.UserID.String(),
-			ListingId: order.ListingID.String(),
-			Status:    string(order.Status),
+			Id:          order.ID.String(),
+			ListingId:   order.ListingID.String(),
+			Name:        name,
+			Description: description,
+			TokenUri:    tokenURI,
+			Status:      string(order.Status),
 		},
 	}, nil
 }

@@ -13,9 +13,11 @@ service OrderService {
 
 message Order {
   string id = 1;
-  string user_id = 2;
-  string listing_id = 3;
-  string status = 4;
+  string listing_id = 2;
+  string name = 3;
+  string description = 4;
+  string token_uri = 5;
+  string status = 6;
 }
 
 message NewOrderRequest {
