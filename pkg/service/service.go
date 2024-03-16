@@ -58,7 +58,6 @@ func (o orderService) CreateOrder(ctx context.Context, req *pb.NewOrderRequest) 
 	}
 
 	order.Status = model.Pending
-	order.TokenURI = req.GetTokenUri()
 
 	_, err = o.db.ExecContext(ctx, "INSERT INTO orders (id, user_id, listing_id, status, token_uri) VALUES ($1, $2, $3, $4, $5)", order.ID, order.UserID, order.ListingID, order.Status, order.TokenURI)
 	if err != nil {
@@ -71,7 +70,6 @@ func (o orderService) CreateOrder(ctx context.Context, req *pb.NewOrderRequest) 
 			UserId:    order.UserID.String(),
 			ListingId: order.ListingID.String(),
 			Status:    string(order.Status),
-			TokenUri:  order.TokenURI,
 		},
 	}, nil
 }
@@ -94,7 +92,6 @@ func (o orderService) GetOrdersByUser(ctx context.Context, req *pb.GetOrdersByUs
 			UserId:    order.UserID.String(),
 			ListingId: order.ListingID.String(),
 			Status:    string(order.Status),
-			TokenUri:  order.TokenURI,
 		})
 	}
 
@@ -116,7 +113,6 @@ func (o orderService) GetOrderByID(ctx context.Context, req *pb.GetOrderByIDRequ
 			UserId:    order.UserID.String(),
 			ListingId: order.ListingID.String(),
 			Status:    string(order.Status),
-			TokenUri:  order.TokenURI,
 		},
 	}, nil
 }

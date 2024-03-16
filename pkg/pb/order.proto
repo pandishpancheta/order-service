@@ -16,13 +16,11 @@ message Order {
   string user_id = 2;
   string listing_id = 3;
   string status = 4;
-  string token_uri = 5;
 }
 
 message NewOrderRequest {
   string user_id = 1;
   string listing_id = 2;
-  string token_uri = 3;
 }
 
 message GetOrdersByUserRequest {
